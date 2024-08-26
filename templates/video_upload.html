@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% include "header.html" %}
+  <title>Video Upload</title>
+</head>
+<body class="video-page">
+  <header id="header" class="header d-flex align-items-center sticky-top">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+      <h1 class="sitename">Video Classification</h1>
+      <nav id="navmenu" class="navmenu">        
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <section id="video-upload" class="video-upload section">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Upload Video</h2>
+        <p>Upload a video to perform real-time vehicle detection and tracking.</p>
+      </div>
+      <div class="container">
+        <form action="/upload_video" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" accept="video/*" required><br><br>
+          <input type="submit" value="Upload and Detect Video" class="btn btn-primary">
+        </form>
+      </div>
+    </section>
+  </main>
+
+  {% include "script.html" %}
+</body>
+</html>
