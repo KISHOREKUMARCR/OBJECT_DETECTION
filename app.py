@@ -169,3 +169,13 @@ async def upload_video(request: Request, file: UploadFile = File(...)):
     cap.release()
     
     return templates.TemplateResponse("result.html", {"request": request, "processed_image_path": detected_image_path})
+
+
+@app.get("/image_upload", response_class=HTMLResponse)
+async def image_upload(request: Request):
+    return templates.TemplateResponse("image_upload.html", {"request": request})
+
+@app.get("/video_upload", response_class=HTMLResponse)
+async def video_upload(request: Request):
+    return templates.TemplateResponse("video_upload.html", {"request": request})
+
