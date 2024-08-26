@@ -3,6 +3,24 @@
 <head>
   {% include "header.html" %}
   <title>Image Upload</title>
+   <!-- Include Bootstrap CSS -->
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+   <!-- Include DataTables CSS -->
+   <link href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" rel="stylesheet">
+   <!-- Include jQuery -->
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <!-- Include DataTables JS -->
+   <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+</head>
+
+  <style>
+    .image-preview {
+      margin-top: 20px;
+      max-width: 100%;
+      max-height: 400px;
+      display: none;
+    }
+  </style>
 </head>
 <body class="image-page">
   <header id="header" class="header d-flex align-items-center sticky-top">
@@ -22,18 +40,83 @@
       </div>
       <div class="container">
         <form action="/detect" method="post" enctype="multipart/form-data">
-          <input type="file" name="file" accept="image/*" required><br><br>
-          
-
-          <input type="submit" value="Upload and Detect Image" class="btn btn-primary">
+          <input type="file" name="file" accept="image/*" id="image-input" required><br><br>
+          <img id="image-preview" class="image-preview" alt="Image Preview">
+          <input type="submit" value="Upload and Detect Image" class="btn btn-primary mt-3">
         </form>
       </div>
     </section>
-  </main>
 
-  {% include "script.html" %}
+    <section id="data_tables_" class="image-upload section">
+          <div class="container section-title" data-aos="fade-up">
+        <h2 class="mt-4">Uploaded Images List</h2>
+        <table id="imagesTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Serial No</th>
+                    <th>Uploaded ID</th>
+                    <th>Preview</th>
+                    <th>Detected Output</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+      </div>
+    </section>
+
+
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-   
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
+
+    imageInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        imagePreview.style.display = "block";
+        reader.addEventListener("load", function() {
+          imagePreview.setAttribute("src", this.result);
+        });
+        reader.readAsDataURL(file);
+      } else {
+        imagePreview.style.display = "none";
+      }
+    });
+    $(document).ready(function() {
+      const table = $('#imagesTable').DataTable({
+          ajax: {
+              url: '/get_images_list',  // Endpoint to fetch the list of images
+              dataSrc: ''
+          },
+          columns: [
+              { data: 'serial_no' },
+              { data: 'uploaded_id' },
+              {
+                  data: 'detected_output',
+                  render: function(data) {
+                      return `<img src="data:image/jpeg;base64,${data}" width="100">`;  // Preview image
+                  }
+              },
+              {
+                  data: 'detected_output',
+                  render: function(data) {
+                      return `<img src="data:image/jpeg;base64,${data}" width="100">`;  // Detected output image
+                  }
+              },
+              {
+                  data: null,
+                  render: function(data, type, row) {
+                      return `<a href="/view/${row.uploaded_id}" class="btn btn-info btn-sm">View</a>`;  // View button
+                  }
+              }
+          ]
+      });
+  });
   </script>
 </body>
 </html>
