@@ -3,6 +3,77 @@
 <head>
   {% include "header.html" %}
   <title>Video Upload</title>
+  <style>
+    body.video-page {
+      background-color: #e9ecef; /* Light gray background */
+    }
+
+    .header {
+      background-color: #343a40; /* Dark background for header */
+      color: #ffffff; /* White text in header */
+    }
+
+    .main {
+      padding: 40px 0; /* Adjust padding for main content */
+    }
+
+    .video-upload {
+      background-color: #ffffff; /* White background for video upload section */
+      padding: 40px 20px; /* Adjust padding for video upload section */
+      border-radius: 8px; /* Rounded corners */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+      max-width: 600px; /* Max width for the form container */
+      margin: 0 auto; /* Center the form container */
+    }
+
+    .video-upload .section-title {
+      text-align: center; /* Center align the section title */
+    }
+
+    .video-upload form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .video-upload input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    .video-upload input[type="submit"] {
+      background-color: #007bff; /* Primary button background color */
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    .video-upload input[type="submit"]:hover {
+      background-color: #0056b3; /* Darker primary button on hover */
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .video-upload {
+        padding: 20px 10px; /* Adjust padding for smaller screens */
+      }
+
+      .video-upload input[type="file"] {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body class="video-page">
   <header id="header" class="header d-flex align-items-center sticky-top">

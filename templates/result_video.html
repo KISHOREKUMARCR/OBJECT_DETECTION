@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Detection Results</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa; /* Light gray background */
+      font-family: Arial, sans-serif;
+      padding-top: 50px;
+    }
+
+    .container {
+      background-color: #ffffff; /* White background for the main content area */
+      border-radius: 15px; /* Rounded corners for the container */
+      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
+      padding: 30px;
+      margin-bottom: 50px; /* Spacing at the bottom of the container */
+    }
+
+    h2 {
+      text-align: center;
+      color: #343a40;
+    }
+
+    .header-divider {
+      width: 60px;
+      height: 5px;
+      background-color: #007bff;
+      margin: 20px auto 30px auto;
+      border-radius: 5px;
+    }
+
+    .processed-image {
+      border: 3px solid #007bff;
+      border-radius: 10px;
+      max-width: 150px;
+      height: auto;
+    }
+
+    .crop-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover; /* Maintain aspect ratio while filling the box */
+      margin: 5px;
+      border: 2px solid #dddddd;
+      border-radius: 8px;
+    }
+
+    .crop-images-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center; /* Align items to center */
+    }
+
+    .crop-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .crop-class-name {
+      margin-top: 5px;
+      font-size: 0.9em;
+      color: #555; /* Adjust color as needed */
+    }
+
+    table.dataTable thead {
+      background-color: #007bff;
+      color: #ffffff;
+    }
+
+    table.dataTable tbody tr {
+      background-color: #ffffff;
+      border-bottom: 1px solid #dddddd;
+    }
+
+    table.dataTable tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 20px 0;
+      background-color: #007bff;
+      color: #ffffff;
+      border-radius: 0 0 15px 15px;
+    }
+  </style>
+</head>
+<body>
+  <main class="main">
+    <section id="results" class="results section">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Video Detection Results</h2>
+        <div class="header-divider"></div>
+        <p>Here are the results of the video detection process.</p>
+      </div>
+      <div class="container">
+        {% if frames_info %}
+          <table id="resultsTable" class="display responsive nowrap table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th>Frame</th>
+                <th>Processed Image</th>
+                <th>Crop Images</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for frame in frames_info %}
+                <tr>
+                  <td>Frame {{ loop.index }}</td>
+                  <td><img src="{{ frame.frame_image }}" class="processed-image" alt="Processed Frame {{ loop.index }}"></td>
+                  <td>
+                    {% if frame.crop_images %}
+                      <div class="crop-images-list">
+                        {% for crop in frame.crop_images %}
+                          <div class="crop-item">
+                            <img src="{{ url_for('static', path=crop.path) }}" class="crop-image" alt="Crop Image {{ loop.index }}">
+                            <div class="crop-class-name">{{ crop.class_name }}</div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <p>No crop images for this frame.</p>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p>No frames processed.</p>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#resultsTable').DataTable({
+        responsive: true
+      });
+    });
+  </script>
+</body>
+</html>

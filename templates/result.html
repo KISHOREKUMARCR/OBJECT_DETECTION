@@ -1,13 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Detection Results</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detection Results</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa; /* Light gray background */
+      font-family: Arial, sans-serif;
+      padding-top: 50px; /* Add padding to move content below a fixed header if needed */
+    }
+
+    .container {
+      background-color: #ffffff; /* White background for the main content area */
+      border-radius: 15px; /* Rounded corners for the container */
+      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
+      padding: 30px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #343a40;
+    }
+
+    .header-divider {
+      width: 60px;
+      height: 5px;
+      background-color: #007bff;
+      margin: 20px auto 30px auto;
+      border-radius: 5px;
+    }
+
+    .processed-image-container, .crop-images-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .processed-image {
+      display: inline-block;
+      border: 3px solid #007bff;
+      border-radius: 10px;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .crop-image {
+      max-width: 150px;
+      max-height: 150px;
+      border: 2px solid #dddddd;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    table.dataTable thead {
+      background-color: #007bff;
+      color: #ffffff;
+    }
+
+    table.dataTable tbody tr {
+      background-color: #ffffff;
+      border-bottom: 1px solid #dddddd;
+    }
+
+    table.dataTable tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 20px 0;
+      background-color: #007bff;
+      color: #ffffff;
+      border-radius: 0 0 15px 15px;
+    }
+  </style>
 </head>
 <body>
+
+  <div class="container">
     <h1>Detection Results</h1>
-    <img src="{{ processed_image_path }}" alt="Detected Image">
-    <br><br>
-    <a href="/">Go Back</a>
+    <div class="header-divider"></div>
+
+    <div class="processed-image-container">
+      <h2>Processed Image</h2>
+      <img src="{{ processed_image_path }}" class="processed-image" alt="Processed Image">
+    </div>
+
+    <div class="crop-images-container">
+      <h2>Cropped Images</h2>
+      <table id="crop-images-table" class="display table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Class Name</th>
+            <th>Crop Image</th>
+            <th>Uploaded ID</th>
+            <th>Serial Number</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for info in crop_images_info %}
+          <tr>
+            <td>{{ info.class_name }}</td>
+            <td class="image-cell">
+              <img src="{{ url_for('static', path='uploads/' ~ info.uploaded_id ~ '/' ~ info.crop_image_path) }}" class="crop-image" alt="Crop Image">
+            </td>
+            <td>{{ info.uploaded_id }}</td>
+            <td>{{ info.serial_number }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#crop-images-table').DataTable();
+    });
+  </script>
 </body>
 </html>
