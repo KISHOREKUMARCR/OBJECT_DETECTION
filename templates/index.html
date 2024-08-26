@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% include "header.html" %} 
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+
+          
+        <h1 class="sitename">Image Classification</h1>
+    
+      <nav id="navmenu" class="navmenu">        
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- <form action="/detect" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*"><br><br>
+        <input type="submit" value="Upload and Detect Image">
+    </form>
+    
+    <h1>Upload Video</h1>
+    <form action="/upload_video" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept="video/*"><br><br>
+        <input type="submit" value="Upload and Detect Video">
+    </form> -->
+   
+
+    <!-- Team Section -->
+    <section id="team" class="team section">
+
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Service</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div>
+
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="team-member d-flex align-items-start">
+              <div class="pic"><img src=" {{ url_for('static', path='assets/img/ICON/select_image.jpg') }}" class="img-fluid" alt=""></div>
+              <div class="member-info">
+                <h4>Select Image</h4>
+                <p>Upload an image to automatically detect and identify vehicles within the scene. The system will analyze 
+                  the image and provide a detailed list of the vehicles detected, including their type and position</p>
+                
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="team-member d-flex align-items-start">
+              <div class="pic"><img 
+                src=" {{ url_for('static', path='assets/img/ICON/select_video.jpg') }}"
+                 class="img-fluid" alt=""></div>
+              <div class="member-info">
+                <h4>Select Video</h4>
+                <p>Upload a video to perform real-time vehicle detection and tracking. The system will process the video to identify vehicles in each frame, providing
+                   a comprehensive list of detected vehicles, along with their movements and interactions over time.</p>
+                
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+    
+   
+  </main>
+
+  {% include "script.html" %} 
+
+</body>
+
+</html>
