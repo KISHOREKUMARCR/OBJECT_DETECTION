@@ -1,15 +1,22 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import cv2
 import os
 import numpy as np
-from fastapi import Request
-import uuid  
+import uuid
+from pymongo import MongoClient
+from bson import ObjectId
+import base64
+from io import BytesIO
 
 app = FastAPI()
 
+# MongoDB Configuration
+client = MongoClient("mongodb://localhost:27017/")
+db = client['image_detection_db']
+collection = db['image_collection']
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -38,6 +45,10 @@ def get_output_layers(net):
         output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
     return output_layers
 
+def encode_image(image):
+    _, buffer = cv2.imencode('.jpg', image)
+    return base64.b64encode(buffer).decode('utf-8')
+
 def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h, output_folders):
     label = str(classes[class_id])
     color = COLORS[class_id]
@@ -47,7 +58,7 @@ def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h, output_
     crop_img = img[int(y):int(y_plus_h), int(x):int(x_plus_w)]
     if crop_img.size == 0:
         print(f"Warning: Empty crop detected for label: {label}")
-        return label 
+        return label, None
 
     crop_image_folder = os.path.join(output_folders['base_folder'], 'crop_images')
     if not os.path.exists(crop_image_folder):
@@ -57,7 +68,7 @@ def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h, output_
     crop_image_path = os.path.join(crop_image_folder, crop_filename)
     cv2.imwrite(crop_image_path, crop_img)
 
-    return label 
+    return label, encode_image(crop_img)
 
 def process_frame(image, output_folders):
     Width = image.shape[1]
@@ -95,22 +106,23 @@ def process_frame(image, output_folders):
     if len(indices) > 0:
         indices = indices.flatten()  
 
+    class_crop_images = {}
     for i in indices:
         box = boxes[i]
         x = box[0]
         y = box[1]
         w = box[2]
         h = box[3]
-        label = draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h), output_folders)
+        label, crop_image_base64 = draw_prediction(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h), output_folders)
+        if crop_image_base64:
+            if label not in class_crop_images:
+                class_crop_images[label] = []
+            class_crop_images[label].append(crop_image_base64)
 
-    detected_output_folder = os.path.join(output_folders['base_folder'], 'detected_output')
-    if not os.path.exists(detected_output_folder):
-        os.makedirs(detected_output_folder)
-    
-    detected_image_path = os.path.join(detected_output_folder, 'detected_image.jpg')
-    cv2.imwrite(detected_image_path, image)
+    detected_image_base64 = encode_image(image)
 
-    return detected_image_path
+    return detected_image_base64, class_crop_images
+
 @app.get("/", response_class=HTMLResponse)
 async def main(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -133,9 +145,22 @@ async def detect(request: Request, file: UploadFile = File(...)):
     
     output_folders = { 'base_folder': upload_folder }
     
-    detected_image_path = process_frame(image, output_folders)    
-    return templates.TemplateResponse("result.html", {"request": request, "processed_image_path": detected_image_path})
+    detected_image_base64, class_crop_images = process_frame(image, output_folders)    
 
+    document = {
+        'uploaded_id': unique_id,
+        'crop_images': [],
+        'detected_output': detected_image_base64,
+        'serial_no': str(uuid.uuid4().hex),
+        'classes': list(class_crop_images.keys()),
+        'class_names': [str(cls) for cls in class_crop_images.keys()],
+        'class_crop_images': class_crop_images
+    }
+    
+    # Add the document to the collection
+    collection.insert_one(document)
+    
+    return templates.TemplateResponse("result.html", {"request": request, "processed_image_path": detected_image_base64})
 
 @app.post("/upload_video", response_class=HTMLResponse)
 async def upload_video(request: Request, file: UploadFile = File(...)):
@@ -154,6 +179,7 @@ async def upload_video(request: Request, file: UploadFile = File(...)):
         return templates.TemplateResponse("result.html", {"request": request, "error_message": "Could not open video file."})
     
     frame_count = 0
+    last_detected_image_base64 = None
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -164,11 +190,12 @@ async def upload_video(request: Request, file: UploadFile = File(...)):
         if not os.path.exists(frame_output_folder):
             os.makedirs(frame_output_folder)
         
-        detected_image_path = process_frame(frame, { 'base_folder': frame_output_folder })
+        detected_image_base64, _ = process_frame(frame, { 'base_folder': frame_output_folder })
+        last_detected_image_base64 = detected_image_base64
         
     cap.release()
     
-    return templates.TemplateResponse("result.html", {"request": request, "processed_image_path": detected_image_path})
+    return templates.TemplateResponse("result.html", {"request": request, "processed_image_path": last_detected_image_base64})
 
 
 @app.get("/image_upload", response_class=HTMLResponse)
@@ -179,3 +206,16 @@ async def image_upload(request: Request):
 async def video_upload(request: Request):
     return templates.TemplateResponse("video_upload.html", {"request": request})
 
+from fastapi.responses import JSONResponse
+
+
+@app.get("/get_images_list")
+async def get_images_list():
+    images = list(collection.find({}, {
+        'serial_no': 1,
+        'uploaded_id': 1,
+        'detected_output': 1,
+        '_id': 0
+    }))
+    return JSONResponse(content=images)
+ 
